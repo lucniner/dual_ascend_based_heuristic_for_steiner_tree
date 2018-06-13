@@ -1,14 +1,15 @@
 package at.ac.tuwien.nda.dualascent.SteinerTree;
 
-import at.ac.tuwien.nda.dualascent.util.Pair;
+import at.ac.tuwien.nda.dualascent.util.Edge;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProblemInstance {
   private int nodeNumber;
   private int edgeNumber;
   private int terminalNumber;
-  private List<Pair<Integer, Integer>> edges;
+  private List<Edge> edges;
   private List<Integer> terminals;
 
   public int getNodeNumber() {
@@ -35,16 +36,16 @@ public class ProblemInstance {
     this.terminalNumber = terminalNumber;
   }
 
-  public List<Pair<Integer, Integer>> getEdges() {
+  public List<Edge> getEdges() {
     return edges;
   }
 
-  public void setEdges(List<Pair<Integer, Integer>> edges) {
+  public void setEdges(List<Edge> edges) {
     this.edges = edges;
   }
 
   public List<Integer> getTerminals() {
-    return terminals;
+    return new ArrayList<>(terminals);
   }
 
   public void setTerminals(List<Integer> terminals) {

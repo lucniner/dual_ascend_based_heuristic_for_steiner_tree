@@ -18,9 +18,12 @@ public class App {
   private static final Logger logger = LoggerFactory.getLogger(App.class);
 
   public static void main(String[] args) {
-    CommandLine cmd = parseArguments(args);
 
-    String fileName = cmd.getOptionValue("file");
+    final String fileName = App.class.getClassLoader().getResource("example.stp").getPath();
+
+//    CommandLine cmd = parseArguments(args);
+
+//    String fileName = cmd.getOptionValue("file");
 
     ProblemInstance instance;
     try {
@@ -35,7 +38,7 @@ public class App {
 
     logger.info("Read " + edges + " edges and " + terminals + " terminals");
 
-    SolutionInstance solutionInstance = new ShortestPath().solve(instance);
+    SolutionInstance solutionInstance = new ShortestPath(instance).solve();
   }
 
   private static CommandLine parseArguments(String[] args) {
