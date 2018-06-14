@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ShortestPath {
   private final Logger logger = LoggerFactory.getLogger(ShortestPath.class);
@@ -34,13 +33,13 @@ public class ShortestPath {
     final List<Integer> remainingTerminals = problemInstance.getTerminals();
     remainingTerminals.remove(0);
 
-    SolutionInstance solutionInstance = new SolutionInstance();
+    SolutionInstance solutionInstance = new SolutionInstance(rootTerminal);
     solutionInstance.addNode(rootTerminal);
 
     int counter = 0;
     while (!remainingTerminals.isEmpty()) {
-      logger.info("------------------------------");
-      logger.info("Iteration for new Terminal " + counter++);
+      //logger.info("------------------------------");
+      //logger.info("Iteration for new Terminal " + counter++);
 
       dijkstra = new HashMap<>();
       problemInstance.getGraph().keySet().stream().filter(key -> key != rootTerminal).forEach(key ->
@@ -70,7 +69,7 @@ public class ShortestPath {
                 for (Arc arc : graphArcs.get(dijkstra.get(curr).getKey().get())) {
                   if (arc.getTo() == curr) {
                     //logger.info("Add arc " + arc.getFrom() + "-" + arc.getTo());
-                    solutionInstance.addArc(arc);
+                    solutionInstance.addArc(arc.getFrom(), arc, arc.getWeight());
                     arc.setWeight(0);
 
                     for (Arc arc2 : graphArcs.get(curr)) {
@@ -141,10 +140,7 @@ public class ShortestPath {
       }
     }
 
-    logger.info("nodes solution: " + solutionInstance.getSteinerTree());
-    logger.info("edges solution: " + solutionInstance.getArcs());
-
-    return null;
+    return solutionInstance;
   }
 
   private Optional<Integer> getMinNotCheckedNode() {

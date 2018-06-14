@@ -2,6 +2,7 @@ package at.ac.tuwien.nda.dualascent;
 
 import at.ac.tuwien.nda.dualascent.SteinerTree.ProblemInstance;
 import at.ac.tuwien.nda.dualascent.SteinerTree.SolutionInstance;
+import at.ac.tuwien.nda.dualascent.SteinerTree.SolutionVerifier;
 import at.ac.tuwien.nda.dualascent.exceptions.SteinerTreeLoadingException;
 import at.ac.tuwien.nda.dualascent.reader.ProblemReader;
 import at.ac.tuwien.nda.dualascent.shortestPathHeuristic.ShortestPath;
@@ -18,12 +19,13 @@ public class App {
   private static final Logger logger = LoggerFactory.getLogger(App.class);
 
   public static void main(String[] args) {
+    CommandLine cmd = parseArguments(args);
 
-    final String fileName = App.class.getClassLoader().getResource("example.stp").getPath();
+    String fileName = App.class.getClassLoader().getResource("example.stp").getPath();
 
-//    CommandLine cmd = parseArguments(args);
-
-//    String fileName = cmd.getOptionValue("file");
+    if (cmd.hasOption("file")) {
+      fileName = cmd.getOptionValue("file");
+    }
 
     ProblemInstance instance;
     try {
@@ -33,12 +35,14 @@ public class App {
       return;
     }
 
-    int terminals = instance.getTerminals().size();
-  //  int edges = instance.getArcs().size();
-
-   // logger.info("Read " + edges + " edges and " + terminals + " terminals");
-
     SolutionInstance solutionInstance = new ShortestPath(instance).solve();
+
+    SolutionVerifier solutionVerifier = new SolutionVerifier(instance, solutionInstance);
+
+    if (solutionVerifier.verifySolution()) {
+      logger.info("Solution is valid with sum: " + solutionInstance.getDistanceSum()); // sum must also be calculated
+    }
+
   }
 
   private static CommandLine parseArguments(String[] args) {
@@ -47,7 +51,6 @@ public class App {
     Options options = new Options();
     Option help = new Option( "h", "help", false, "print this message" );
     Option file = new Option("f", "file", true, "load instance from given file");
-    file.setRequired(true);
 
     options.addOption(help);
     options.addOption(file);

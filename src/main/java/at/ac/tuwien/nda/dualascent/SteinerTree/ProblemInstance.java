@@ -3,7 +3,6 @@ package at.ac.tuwien.nda.dualascent.SteinerTree;
 import at.ac.tuwien.nda.dualascent.util.Arc;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
