@@ -19,7 +19,7 @@ public class App {
 
   public static void main(String[] args) {
 
-    final String fileName = App.class.getClassLoader().getResource("slideExample.stp").getPath();
+    final String fileName = App.class.getClassLoader().getResource("example.stp").getPath();
 
 //    CommandLine cmd = parseArguments(args);
 

@@ -37,9 +37,10 @@ public class ShortestPath {
     SolutionInstance solutionInstance = new SolutionInstance();
     solutionInstance.addNode(rootTerminal);
 
+    int counter = 0;
     while (!remainingTerminals.isEmpty()) {
       logger.info("------------------------------");
-      logger.info("new Iteration for new Terminal");
+      logger.info("Iteration for new Terminal " + counter++);
 
       dijkstra = new HashMap<>();
       problemInstance.getGraph().keySet().stream().filter(key -> key != rootTerminal).forEach(key ->
@@ -97,6 +98,7 @@ public class ShortestPath {
           currentBestTerminal = Optional.of(remainingTerminals.get(0));
         }
 
+        alreadyChecked.add(currentNode);
         for (Arc neighbour : graphArcs.get(currentNode)) {
           if (alreadyChecked.contains(neighbour.getTo())) {
             continue;
@@ -118,7 +120,6 @@ public class ShortestPath {
                       )
               );
             }
-            alreadyChecked.add(currentNode);
 
             for (Map.Entry<Integer, Pair<Optional<Integer>, Optional<Integer>>> entry : dijkstra.entrySet()) {
               logger.info("Node: " + entry.getKey() + ", Prev: " + entry.getValue().getKey() + ", Dist: " + entry.getValue().getValue());
@@ -149,23 +150,26 @@ public class ShortestPath {
   private Optional<Integer> getMinNotCheckedNode() {
     Optional<Integer> currentBestNode = Optional.empty();
     Optional<Integer> weight = Optional.empty();
-    for (Map.Entry<Integer, Pair<Optional<Integer>, Optional<Integer>>> terminal : dijkstra.entrySet()) {
+    logger.info("getminnotcheckednode set size: " + dijkstra.entrySet().size());
+    logger.info(alreadyChecked.size() + "already checked: " + alreadyChecked);
 
-      if (alreadyChecked.contains(terminal.getKey())) {
+    for (Map.Entry<Integer, Pair<Optional<Integer>, Optional<Integer>>> node : dijkstra.entrySet()) {
+
+      if (alreadyChecked.contains(node.getKey())) {
         continue;
       }
 
-      if (!terminal.getValue().getValue().isPresent()) {
+      if (!node.getValue().getValue().isPresent()) {
         continue;
       }
 
       if ((!currentBestNode.isPresent())) {
-          currentBestNode = Optional.of(terminal.getKey());
-          weight = Optional.of(terminal.getValue().getValue().get());
-        } else if (currentBestNode.isPresent()) {
-        if (weight.get() > terminal.getValue().getValue().get()) {
-          currentBestNode = Optional.of(terminal.getKey());
-          weight = Optional.of(terminal.getValue().getValue().get());
+          currentBestNode = Optional.of(node.getKey());
+          weight = Optional.of(node.getValue().getValue().get());
+      } else {
+        if (weight.get() > node.getValue().getValue().get()) {
+          currentBestNode = Optional.of(node.getKey());
+          weight = Optional.of(node.getValue().getValue().get());
         }
       }
     }
