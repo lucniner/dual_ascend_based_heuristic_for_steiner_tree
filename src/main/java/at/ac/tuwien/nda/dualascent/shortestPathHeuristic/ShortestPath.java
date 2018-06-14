@@ -60,7 +60,7 @@ public class ShortestPath {
           if (getMinNotCheckedNode().get() > upperBound.get()) {
             remainingTerminals.remove(getIndex(currentBestTerminal.get(), remainingTerminals));
             solutionInstance.addNode(currentBestTerminal.get());
-            logger.info("Add terminal: " + currentBestTerminal.get());
+            //logger.info("Add terminal: " + currentBestTerminal.get());
 
             int curr = currentBestTerminal.get();
             while(true) {

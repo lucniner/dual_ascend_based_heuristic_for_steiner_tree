@@ -6,24 +6,20 @@ import at.ac.tuwien.nda.dualascent.util.Arc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProblemReader {
   private static final Logger logger = LoggerFactory.getLogger(ProblemReader.class);
 
-  public static ProblemInstance loadInstance(String fileName) throws IOException, SteinerTreeLoadingException {
-    logger.info("load instance from file: " + fileName);
+  public static ProblemInstance loadInstance(File file) throws IOException, SteinerTreeLoadingException {
     ProblemInstance instance = new ProblemInstance();
 
     try (BufferedReader reader =
                new BufferedReader(
                        new InputStreamReader(
-                               new FileInputStream(fileName)))) {
+                               new FileInputStream(file)))) {
 
 
       String currentLine = reader.readLine();
