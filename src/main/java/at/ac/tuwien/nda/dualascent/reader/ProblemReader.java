@@ -2,7 +2,7 @@ package at.ac.tuwien.nda.dualascent.reader;
 
 import at.ac.tuwien.nda.dualascent.SteinerTree.ProblemInstance;
 import at.ac.tuwien.nda.dualascent.exceptions.SteinerTreeLoadingException;
-import at.ac.tuwien.nda.dualascent.util.Edge;
+import at.ac.tuwien.nda.dualascent.util.Arc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +60,6 @@ public class ProblemReader {
   }
 
   private static void parseGraph(BufferedReader bf, ProblemInstance instance) throws IOException, SteinerTreeLoadingException {
-    List<Edge> edges = new ArrayList<>();
     String line = bf.readLine();
     while(!(line.startsWith("END") || line.startsWith("End"))) {
       String[] words = line.split(" ");
@@ -69,13 +68,15 @@ public class ProblemReader {
       } else if ("Edges".equals(words[0])) {
         instance.setEdgeNumber(Integer.parseInt(words[1]));
       } else if ("E".equals(words[0])) {
-        edges.add(new Edge(Integer.parseInt(words[1]), Integer.parseInt(words[2]), Integer.parseInt(words[3])));
+        instance.addArc(Integer.parseInt(words[1]), new Arc(Integer.parseInt(words[1]), Integer.parseInt(words[2]), Integer.parseInt(words[3])));
+        instance.addArc(Integer.parseInt(words[2]), new Arc(Integer.parseInt(words[2]), Integer.parseInt(words[1]), Integer.parseInt(words[3])));
+      } else if ("A".equals(words[0])) {
+        instance.addArc(Integer.parseInt(words[1]), new Arc(Integer.parseInt(words[1]), Integer.parseInt(words[2]), Integer.parseInt(words[3])));
       } else {
         throw new SteinerTreeLoadingException("Unexpected token reading graph section: " + words[0]);
       }
       line = bf.readLine();
     }
-    instance.setEdges(edges);
   }
 
   private static void parseTerminals(BufferedReader bf, ProblemInstance instance) throws IOException, SteinerTreeLoadingException {

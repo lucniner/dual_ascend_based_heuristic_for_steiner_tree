@@ -2,121 +2,184 @@ package at.ac.tuwien.nda.dualascent.shortestPathHeuristic;
 
 import at.ac.tuwien.nda.dualascent.SteinerTree.ProblemInstance;
 import at.ac.tuwien.nda.dualascent.SteinerTree.SolutionInstance;
-import at.ac.tuwien.nda.dualascent.util.Edge;
-import es.usc.citius.hipster.algorithm.Algorithm;
-import es.usc.citius.hipster.algorithm.Hipster;
-import es.usc.citius.hipster.graph.GraphBuilder;
-import es.usc.citius.hipster.graph.GraphSearchProblem;
-import es.usc.citius.hipster.graph.HipsterGraph;
-import es.usc.citius.hipster.model.problem.SearchProblem;
+import at.ac.tuwien.nda.dualascent.util.Arc;
+import at.ac.tuwien.nda.dualascent.util.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class ShortestPath {
+  private final Logger logger = LoggerFactory.getLogger(ShortestPath.class);
 
-  private final Random random = new Random();
-  private final List<Edge> graphEdges;
+  private final HashMap<Integer, List<Arc>> graphArcs;
   private final ProblemInstance problemInstance;
-  private HipsterGraph<Integer, Integer> graph;
-  private int lowerBound = 0;
+  private Optional<Integer> upperBound = Optional.empty();
+  private Optional<Integer> currentBestTerminal = Optional.empty();
+
+  // Knoten zu Pair von Vorgänger und die Gesamtdistanz
+  private HashMap<Integer, Pair<Optional<Integer>, Optional<Integer>>> dijkstra;
+  private HashSet<Integer> alreadyChecked;
 
   public ShortestPath(final ProblemInstance problemInstance) {
     this.problemInstance = problemInstance;
-    this.graphEdges = this.problemInstance.getEdges();
+    this.graphArcs = this.problemInstance.getGraph();
+    this.dijkstra = new HashMap<>();
+    this.alreadyChecked = new HashSet<>();
   }
 
   public SolutionInstance solve() {
+    final int rootTerminal =  problemInstance.getTerminals().get(0);
+    final List<Integer> remainingTerminals = problemInstance.getTerminals();
+    remainingTerminals.remove(0);
+
+    SolutionInstance solutionInstance = new SolutionInstance();
+    solutionInstance.addNode(rootTerminal);
+
+    while (!remainingTerminals.isEmpty()) {
+      logger.info("------------------------------");
+      logger.info("new Iteration for new Terminal");
+
+      dijkstra = new HashMap<>();
+      problemInstance.getGraph().keySet().stream().filter(key -> key != rootTerminal).forEach(key ->
+              dijkstra.put(key, new Pair(Optional.empty(), Optional.empty()))
+      );
+      solutionInstance.getSteinerTree().stream().forEach(key ->
+              dijkstra.put(key, new Pair(Optional.of(rootTerminal), Optional.of(0)))
+      );
+      dijkstra.put(rootTerminal, new Pair<>(Optional.empty(), Optional.of(0)));
 
 
-    final List<Edge> currentGraph = new ArrayList<>();
-    final int rootIndex = getRandom(0, problemInstance.getTerminalNumber() - 1);
-    final int rootTerminal = problemInstance.getTerminals().get(rootIndex);
-    System.out.println("root terminal: " + rootTerminal);
+      upperBound  = Optional.empty();
+      currentBestTerminal = Optional.empty();
+      alreadyChecked = new HashSet<>();
 
-    final List<Integer> terminals = problemInstance.getTerminals();
-    terminals.remove(rootIndex);
+      while (true) {
+        if (upperBound.isPresent()) {
+          if (getMinNotCheckedNode().get() > upperBound.get()) {
+            remainingTerminals.remove(getIndex(currentBestTerminal.get(), remainingTerminals));
+            solutionInstance.addNode(currentBestTerminal.get());
+            logger.info("Add terminal: " + currentBestTerminal.get());
 
-    while (!terminals.isEmpty()) {
-      final int activeIndex = getRandom(0, terminals.size() - 1);
-      final int activeTerminal = terminals.get(activeIndex);
+            int curr = currentBestTerminal.get();
+            while(true) {
+              solutionInstance.addNode(curr);
+              if (dijkstra.get(curr).getKey().isPresent()) {
+                for (Arc arc : graphArcs.get(dijkstra.get(curr).getKey().get())) {
+                  if (arc.getTo() == curr) {
+                    logger.info("Add arc " + arc.getFrom() + "-" + arc.getTo());
+                    solutionInstance.addArc(arc);
+                    arc.setWeight(0);
 
-      this.constructGraph(currentGraph);
+                    for (Arc arc2 : graphArcs.get(curr)) {
+                      if (arc2.getTo() == arc.getFrom()) {
+                        logger.info("Set 0 to arc " + arc2.getFrom() + "-" + arc2.getTo());
+                        arc2.setWeight(0);
+                      }
+                    }
+                  }
+                }
+              }
+              if (!dijkstra.get(curr).getKey().isPresent()) {
+                break;
+              }
+              curr = dijkstra.get(curr).getKey().get();
+            }
+            break;
+          }
+        }
 
-      SearchProblem problem =
-              GraphSearchProblem.startingFrom(activeTerminal).in(graph).takeCostsFromEdges().build();
-      final Algorithm.SearchResult result = Hipster.createDijkstra(problem).search(rootTerminal);
+        int currentNode = getMinNotCheckedNode().get();
+        logger.info("Current terminal: " + currentNode);
+        if (remainingTerminals.size() == 1) {
+          upperBound = dijkstra.get(remainingTerminals.get(0)).getValue();
+          currentBestTerminal = Optional.of(remainingTerminals.get(0));
+        }
 
-      if (!result.getOptimalPaths().isEmpty()) {
-        if (result.getOptimalPaths().size() == 1) {
-          List<Integer> l = (List<Integer>) result.getOptimalPaths().get(0);
-          if (l.contains(rootTerminal)) {
-            terminals.remove(activeIndex);
+        for (Arc neighbour : graphArcs.get(currentNode)) {
+          if (alreadyChecked.contains(neighbour.getTo())) {
             continue;
           }
-        }
+          logger.info("Check neighbor '" + neighbour.getTo() + "' of current terminal " + currentNode);
+          if (!dijkstra.get(neighbour.getTo()).getValue().isPresent()) {
+            dijkstra.put(neighbour.getTo(),
+                    new Pair(
+                            Optional.of(currentNode),
+                            Optional.of(neighbour.getWeight() + dijkstra.get(currentNode).getValue().get())
+                    )
+            );
+          } else {
+            if (dijkstra.get(neighbour.getTo()).getValue().get() > (neighbour.getWeight() + dijkstra.get(currentNode).getValue().get())) {
+              dijkstra.put(neighbour.getTo(),
+                      new Pair(
+                              Optional.of(currentNode),
+                              Optional.of(neighbour.getWeight() + dijkstra.get(currentNode).getValue().get())
+                      )
+              );
+            }
+            alreadyChecked.add(currentNode);
 
-      }
+            for (Map.Entry<Integer, Pair<Optional<Integer>, Optional<Integer>>> entry : dijkstra.entrySet()) {
+              logger.info("Node: " + entry.getKey() + ", Prev: " + entry.getValue().getKey() + ", Dist: " + entry.getValue().getValue());
+            }
 
-
-      final OptionalInt delta =
-              getConnectedEdgesToNode(activeTerminal).stream().mapToInt(Edge::getWeight).min();
-
-      for (final Edge edge : getConnectedEdgesToNode(activeTerminal)) {
-        if (delta.isPresent() && edge.getWeight() > 0) {
-          final int newWeight = edge.getWeight() - delta.getAsInt();
-          if (newWeight < 0) {
-            throw new RuntimeException("this should not happen - fix it");
+            if (remainingTerminals.contains(neighbour.getTo())) {
+              if (upperBound.isPresent()) {
+                if (dijkstra.get(neighbour.getTo()).getValue().get() < upperBound.get()) {
+                  upperBound = Optional.of(dijkstra.get(neighbour.getTo()).getValue().get());
+                  currentBestTerminal = Optional.of(neighbour.getTo());
+                }
+              } else {
+                upperBound = Optional.of(dijkstra.get(neighbour.getTo()).getValue().get());
+                currentBestTerminal = Optional.of(neighbour.getTo());
+              }
+            }
           }
-
-          final int edgeIndex = getIndex(edge);
-          this.graphEdges.get(edgeIndex).setWeight(newWeight);
-          if (newWeight == 0) {
-            currentGraph.add(edge);
-          }
         }
-      }
-
-      if (delta.isPresent()) {
-        lowerBound += delta.getAsInt();
       }
     }
 
-    System.out.println(lowerBound);
+    logger.info("nodes solution: " + solutionInstance.getSteinerTree());
+    logger.info("edges solution: " + solutionInstance.getArcs());
+
     return null;
   }
 
-  private void constructGraph(final List<Edge> edges) {
-    final GraphBuilder<Integer, Integer> builder = GraphBuilder.create();
-    for (final Edge edge : edges) {
-      builder.connect(edge.getTo()).to(edge.getFrom()).withEdge(edge.getWeight());
+  private Optional<Integer> getMinNotCheckedNode() {
+    Optional<Integer> currentBestNode = Optional.empty();
+    Optional<Integer> weight = Optional.empty();
+    for (Map.Entry<Integer, Pair<Optional<Integer>, Optional<Integer>>> terminal : dijkstra.entrySet()) {
+
+      if (alreadyChecked.contains(terminal.getKey())) {
+        continue;
+      }
+
+      if (!terminal.getValue().getValue().isPresent()) {
+        continue;
+      }
+
+      if ((!currentBestNode.isPresent())) {
+          currentBestNode = Optional.of(terminal.getKey());
+          weight = Optional.of(terminal.getValue().getValue().get());
+        } else if (currentBestNode.isPresent()) {
+        if (weight.get() > terminal.getValue().getValue().get()) {
+          currentBestNode = Optional.of(terminal.getKey());
+          weight = Optional.of(terminal.getValue().getValue().get());
+        }
+      }
     }
-    graph = builder.createUndirectedGraph();
+    return currentBestNode;
   }
 
-  private void printSolutionGraphs(final List<List<Integer>> paths) {
-    paths.forEach(path -> System.out.println(Arrays.toString(path.toArray())));
-  }
-
-  private int getRandom(final int min, final int max) {
-    return random.nextInt(max - min + 1) + min;
-  }
-
-  private Set<Edge> getConnectedEdgesToNode(final int node) {
-    return this.graphEdges
-            .stream()
-            .filter(e -> e.getWeight() > 0 && (e.getFrom() == node || e.getTo() == node))
-            .collect(Collectors.toSet());
-  }
-
-  private int getIndex(final Edge edge) {
+  private int getIndex(Integer node, List<Integer> remainingTerminals) {
     int count = 0;
-    for (final Edge e : this.graphEdges) {
-      if (e.equals(edge)) {
+    for (final Integer element : remainingTerminals) {
+      if (element.equals(node)) {
         return count;
       }
       count++;
     }
-    return count;
+    throw new RuntimeException("element '" + node + "' not in list " + remainingTerminals);
   }
 }

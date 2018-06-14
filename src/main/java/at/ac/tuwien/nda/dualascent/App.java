@@ -19,7 +19,7 @@ public class App {
 
   public static void main(String[] args) {
 
-    final String fileName = App.class.getClassLoader().getResource("example.stp").getPath();
+    final String fileName = App.class.getClassLoader().getResource("slideExample.stp").getPath();
 
 //    CommandLine cmd = parseArguments(args);
 
@@ -34,9 +34,9 @@ public class App {
     }
 
     int terminals = instance.getTerminals().size();
-    int edges = instance.getEdges().size();
+  //  int edges = instance.getArcs().size();
 
-    logger.info("Read " + edges + " edges and " + terminals + " terminals");
+   // logger.info("Read " + edges + " edges and " + terminals + " terminals");
 
     SolutionInstance solutionInstance = new ShortestPath(instance).solve();
   }
