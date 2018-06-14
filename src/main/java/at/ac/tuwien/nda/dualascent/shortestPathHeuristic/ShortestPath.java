@@ -69,13 +69,13 @@ public class ShortestPath {
               if (dijkstra.get(curr).getKey().isPresent()) {
                 for (Arc arc : graphArcs.get(dijkstra.get(curr).getKey().get())) {
                   if (arc.getTo() == curr) {
-                    logger.info("Add arc " + arc.getFrom() + "-" + arc.getTo());
+                    //logger.info("Add arc " + arc.getFrom() + "-" + arc.getTo());
                     solutionInstance.addArc(arc);
                     arc.setWeight(0);
 
                     for (Arc arc2 : graphArcs.get(curr)) {
                       if (arc2.getTo() == arc.getFrom()) {
-                        logger.info("Set 0 to arc " + arc2.getFrom() + "-" + arc2.getTo());
+                        //logger.info("Set 0 to arc " + arc2.getFrom() + "-" + arc2.getTo());
                         arc2.setWeight(0);
                       }
                     }
@@ -92,7 +92,7 @@ public class ShortestPath {
         }
 
         int currentNode = getMinNotCheckedNode().get();
-        logger.info("Current terminal: " + currentNode);
+        //logger.info("Current terminal: " + currentNode);
         if (remainingTerminals.size() == 1) {
           upperBound = dijkstra.get(remainingTerminals.get(0)).getValue();
           currentBestTerminal = Optional.of(remainingTerminals.get(0));
@@ -103,7 +103,7 @@ public class ShortestPath {
           if (alreadyChecked.contains(neighbour.getTo())) {
             continue;
           }
-          logger.info("Check neighbor '" + neighbour.getTo() + "' of current terminal " + currentNode);
+          //logger.info("Check neighbor '" + neighbour.getTo() + "' of current terminal " + currentNode);
           if (!dijkstra.get(neighbour.getTo()).getValue().isPresent()) {
             dijkstra.put(neighbour.getTo(),
                     new Pair(
@@ -120,21 +120,21 @@ public class ShortestPath {
                       )
               );
             }
+          }
 
-            for (Map.Entry<Integer, Pair<Optional<Integer>, Optional<Integer>>> entry : dijkstra.entrySet()) {
-              logger.info("Node: " + entry.getKey() + ", Prev: " + entry.getValue().getKey() + ", Dist: " + entry.getValue().getValue());
-            }
+          //for (Map.Entry<Integer, Pair<Optional<Integer>, Optional<Integer>>> entry : dijkstra.entrySet()) {
+          //  logger.info("Node: " + entry.getKey() + ", Prev: " + entry.getValue().getKey() + ", Dist: " + entry.getValue().getValue());
+          //}
 
-            if (remainingTerminals.contains(neighbour.getTo())) {
-              if (upperBound.isPresent()) {
-                if (dijkstra.get(neighbour.getTo()).getValue().get() < upperBound.get()) {
-                  upperBound = Optional.of(dijkstra.get(neighbour.getTo()).getValue().get());
-                  currentBestTerminal = Optional.of(neighbour.getTo());
-                }
-              } else {
+          if (remainingTerminals.contains(neighbour.getTo())) {
+            if (upperBound.isPresent()) {
+              if (dijkstra.get(neighbour.getTo()).getValue().get() < upperBound.get()) {
                 upperBound = Optional.of(dijkstra.get(neighbour.getTo()).getValue().get());
                 currentBestTerminal = Optional.of(neighbour.getTo());
               }
+            } else {
+              upperBound = Optional.of(dijkstra.get(neighbour.getTo()).getValue().get());
+              currentBestTerminal = Optional.of(neighbour.getTo());
             }
           }
         }
@@ -150,8 +150,6 @@ public class ShortestPath {
   private Optional<Integer> getMinNotCheckedNode() {
     Optional<Integer> currentBestNode = Optional.empty();
     Optional<Integer> weight = Optional.empty();
-    logger.info("getminnotcheckednode set size: " + dijkstra.entrySet().size());
-    logger.info(alreadyChecked.size() + "already checked: " + alreadyChecked);
 
     for (Map.Entry<Integer, Pair<Optional<Integer>, Optional<Integer>>> node : dijkstra.entrySet()) {
 
