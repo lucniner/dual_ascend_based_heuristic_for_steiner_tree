@@ -56,7 +56,7 @@ public class DualAscend {
             arc.setWeight(Math.max(arc.getWeight() - delta.get(), 0));
             if (arc.getWeight() == 0) {
               currentGraph.add(arc);
-              solutionInstance.addArc(arc.getFrom(), arc, problemInstance.getWeight(arc.getFrom(), arc.getTo()).get());
+              solutionInstance.addArc(arc.getFrom(), arc.getTo(), problemInstance.getWeight(arc.getFrom(), arc.getTo()).get());
             }
           }
         }
@@ -67,7 +67,6 @@ public class DualAscend {
      }
     }
 
-    logger.info("lower bound: " + lowerBound);
     return solutionInstance;
   }
 

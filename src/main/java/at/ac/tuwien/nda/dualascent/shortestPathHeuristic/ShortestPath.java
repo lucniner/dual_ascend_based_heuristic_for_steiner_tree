@@ -54,7 +54,7 @@ public class ShortestPath {
 
       while (true) {
         if (upperBound.isPresent()) {
-          if (getMinNotCheckedNode().get() > upperBound.get()) {
+          if (!getMinNotCheckedNode().isPresent() || getMinNotCheckedNode().get() > upperBound.get()) {
             remainingTerminals.remove(getIndex(currentBestTerminal.get(), remainingTerminals));
             solutionInstance.addNode(currentBestTerminal.get());
 
@@ -64,7 +64,7 @@ public class ShortestPath {
               if (dijkstra.get(curr).getKey().isPresent()) {
                 for (Arc arc : graphArcs.get(dijkstra.get(curr).getKey().get())) {
                   if (arc.getTo() == curr) {
-                    solutionInstance.addArc(arc.getFrom(), arc, arc.getWeight());
+                    solutionInstance.addArc(arc.getFrom(), arc.getTo(), arc.getWeight());
                     arc.setWeight(0);
 
                     if (!problemInstance.isDirected()) {

@@ -58,14 +58,17 @@ public class App {
         return;
       }
 
-//      SolutionInstance solutionInstance = new DualAscend(instance).solve();
-//      ProblemInstance instance2 = solutionInstance.convertToProblemInstance();
+      if (cmd.hasOption("dualAscent")) {
+        SolutionInstance solutionInstanceDualAscent = new DualAscend(instance).solve();
+        instance = solutionInstanceDualAscent.convertToProblemInstance();
+      }
+
       SolutionInstance solutionInstance2 = new ShortestPath(instance).solve();
       SolutionVerifier solutionVerifier = new SolutionVerifier(instance, solutionInstance2);
 
 
       if (solutionVerifier.verifySolution()) {
-        logger.info("Valid solution for instance '"+file.getName()+"' was created with sum: " + solutionInstance2.getDistanceSum()); // sum must also be calculated
+        logger.info("Instance '"+file.getName()+"' has sum of :" + solutionInstance2.getDistanceSum()); // sum must also be calculated
       }
     }
   }
@@ -77,10 +80,12 @@ public class App {
     Option help = new Option( "h", "help", false, "print this message" );
     Option file = new Option("f", "file", true, "load instance from given file");
     Option directory = new Option("d", "directory", true, "load all instances from given directory");
+    Option dualAscent = new Option("a", "dualAscent", false, "use dual ascent before shortest path heuristic");
 
     options.addOption(help);
     options.addOption(file);
     options.addOption(directory);
+    options.addOption(dualAscent);
 
     try {
       cmd = new DefaultParser().parse(options, args, false);

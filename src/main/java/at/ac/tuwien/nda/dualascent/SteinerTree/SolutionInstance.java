@@ -39,12 +39,13 @@ public class SolutionInstance {
     return arcs;
   }
 
-  public void addArc(Integer node, Arc  arc, int weight) {
-    if (!arcs.containsKey(node)) {
-      arcs.put(node, new ArrayList<>());
+  public void addArc(int from, int to, int weight) {
+    Arc arc = new Arc(from, to, weight);
+    if (!arcs.containsKey(from)) {
+      arcs.put(from, new ArrayList<>());
     }
-    if (!arcs.get(node).contains(arc)) {
-      arcs.get(node).add(arc);
+    if (!arcs.get(from).contains(arc)) {
+      arcs.get(from).add(arc);
       distanceSum += weight;
     }
   }

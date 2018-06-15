@@ -1,5 +1,7 @@
 package at.ac.tuwien.nda.dualascent.util;
 
+import java.util.Objects;
+
 public class Arc {
 
   private final int from;
@@ -27,6 +29,22 @@ public class Arc {
   public Arc setWeight(final int weight) {
     this.weight = weight;
     return this;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Arc arc = (Arc) o;
+    return from == arc.from &&
+            to == arc.to &&
+            weight == arc.weight;
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(from, to, weight);
   }
 
   @Override
