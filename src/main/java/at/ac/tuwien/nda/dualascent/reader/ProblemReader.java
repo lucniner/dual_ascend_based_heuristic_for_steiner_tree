@@ -60,14 +60,14 @@ public class ProblemReader {
     while(!(line.startsWith("END") || line.startsWith("End"))) {
       String[] words = line.split(" ");
       if ("Nodes".equals(words[0])) {
-        instance.setNodeNumber(Integer.parseInt(words[1]));
+        //instance.setNodeNumber(Integer.parseInt(words[1]));
       } else if ("Edges".equals(words[0])) {
-        instance.setEdgeNumber(Integer.parseInt(words[1]));
+        //instance.setEdgeNumber(Integer.parseInt(words[1]));
       } else if ("E".equals(words[0])) {
-        instance.addArc(Integer.parseInt(words[1]), new Arc(Integer.parseInt(words[1]), Integer.parseInt(words[2]), Integer.parseInt(words[3])));
-        instance.addArc(Integer.parseInt(words[2]), new Arc(Integer.parseInt(words[2]), Integer.parseInt(words[1]), Integer.parseInt(words[3])));
+        instance.addArc(new Arc(Integer.parseInt(words[1]), Integer.parseInt(words[2]), Integer.parseInt(words[3])));
+        instance.addArc(new Arc(Integer.parseInt(words[2]), Integer.parseInt(words[1]), Integer.parseInt(words[3])));
       } else if ("A".equals(words[0])) {
-        instance.addArc(Integer.parseInt(words[1]), new Arc(Integer.parseInt(words[1]), Integer.parseInt(words[2]), Integer.parseInt(words[3])));
+        instance.addArc(new Arc(Integer.parseInt(words[1]), Integer.parseInt(words[2]), Integer.parseInt(words[3])));
       } else {
         throw new SteinerTreeLoadingException("Unexpected token reading graph section: " + words[0]);
       }
@@ -81,7 +81,7 @@ public class ProblemReader {
     while(!(line.startsWith("END") || line.startsWith("End"))) {
       String[] words = line.split(" ");
       if ("Terminals".equals(words[0])) {
-        instance.setTerminalNumber(Integer.parseInt(words[1]));
+        //instance.setTerminalNumber(Integer.parseInt(words[1]));
       } else if ("T".equals(words[0])) {
         terminals.add(Integer.parseInt(words[1]));
       }

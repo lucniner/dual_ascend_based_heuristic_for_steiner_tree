@@ -12,12 +12,15 @@ public class SolutionInstance {
   private HashSet<Integer> steinerTree;
   private int distanceSum;
   private HashMap<Integer, List<Arc>> arcs;
+  private List<Integer> allTerminals;
 
-  public SolutionInstance(int rootTerminal) {
+  public SolutionInstance(int rootTerminal, List<Integer> allTerminals) {
     this.rootTerminal = rootTerminal;
     this.steinerTree = new HashSet<>();
+    this.steinerTree.add(rootTerminal);
     this.distanceSum = 0;
     this.arcs = new HashMap<>();
+    this.allTerminals = allTerminals;
   }
 
   public void addNode(Integer node) {
@@ -48,5 +51,18 @@ public class SolutionInstance {
 
   public int getRootTerminal() {
     return rootTerminal;
+  }
+
+  public ProblemInstance convertToProblemInstance() {
+    ProblemInstance problemInstance = new ProblemInstance();
+    problemInstance.setTerminals(allTerminals);
+
+    for (Integer node : arcs.keySet()) {
+      for (Arc arc : arcs.get(node)) {
+        problemInstance.addArc(new Arc(arc.getFrom(), arc.getTo(), arc.getWeight()));
+      }
+    }
+
+    return problemInstance;
   }
 }

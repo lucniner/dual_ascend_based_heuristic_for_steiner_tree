@@ -3,6 +3,7 @@ package at.ac.tuwien.nda.dualascent;
 import at.ac.tuwien.nda.dualascent.SteinerTree.ProblemInstance;
 import at.ac.tuwien.nda.dualascent.SteinerTree.SolutionInstance;
 import at.ac.tuwien.nda.dualascent.SteinerTree.SolutionVerifier;
+import at.ac.tuwien.nda.dualascent.dualascend.DualAscend;
 import at.ac.tuwien.nda.dualascent.exceptions.SteinerTreeLoadingException;
 import at.ac.tuwien.nda.dualascent.reader.ProblemReader;
 import at.ac.tuwien.nda.dualascent.shortestPathHeuristic.ShortestPath;
@@ -57,8 +58,11 @@ public class App {
         return;
       }
 
+//      SolutionInstance solutionInstance = new DualAscend(instance).solve();
+//      ProblemInstance instance2 = solutionInstance.convertToProblemInstance();
       SolutionInstance solutionInstance = new ShortestPath(instance).solve();
       SolutionVerifier solutionVerifier = new SolutionVerifier(instance, solutionInstance);
+
 
       if (solutionVerifier.verifySolution()) {
         logger.info("Valid solution for instance '"+file.getName()+"' was created with sum: " + solutionInstance.getDistanceSum()); // sum must also be calculated
