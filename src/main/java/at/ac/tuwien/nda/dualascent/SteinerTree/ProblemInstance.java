@@ -7,12 +7,16 @@ import java.util.*;
 public class ProblemInstance {
   private List<Integer> terminals;
 
+  private boolean isDirected;
+
   private HashMap<Integer, List<Arc>> arcs_by_from_node;
   private HashMap<Integer, List<Arc>> arcs_by_to_node;
 
   public ProblemInstance() {
     this.arcs_by_from_node = new HashMap<>();
     this.arcs_by_to_node = new HashMap<>();
+
+    this.isDirected = true;
   }
 
   public void addArc(Arc arc) {
@@ -75,5 +79,13 @@ public class ProblemInstance {
       }
     }
     return weight;
+  }
+
+  public boolean isDirected() {
+    return isDirected;
+  }
+
+  public void setDirected(boolean directed) {
+    isDirected = directed;
   }
 }

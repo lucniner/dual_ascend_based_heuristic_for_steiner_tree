@@ -39,6 +39,9 @@ public class ShortestPath {
       problemInstance.getGraph().keySet().stream().filter(key -> key != rootTerminal).forEach(key ->
               dijkstra.put(key, new Pair(Optional.empty(), Optional.empty()))
       );
+      problemInstance.getGraphByToNode().keySet().stream().filter(key -> key != rootTerminal).forEach(key ->
+              dijkstra.put(key, new Pair(Optional.empty(), Optional.empty()))
+      );
       solutionInstance.getSteinerTree().stream().forEach(key ->
               dijkstra.put(key, new Pair(Optional.empty(), Optional.of(0)))
       );
@@ -64,9 +67,11 @@ public class ShortestPath {
                     solutionInstance.addArc(arc.getFrom(), arc, arc.getWeight());
                     arc.setWeight(0);
 
-                    for (Arc arc2 : graphArcs.get(curr)) {
-                      if (arc2.getTo() == arc.getFrom()) {
-                        arc2.setWeight(0);
+                    if (!problemInstance.isDirected()) {
+                      for (Arc arc2 : graphArcs.get(curr)) {
+                        if (arc2.getTo() == arc.getFrom()) {
+                          arc2.setWeight(0);
+                        }
                       }
                     }
                   }
@@ -88,11 +93,19 @@ public class ShortestPath {
         }
 
         alreadyChecked.add(currentNode);
+
+        if (graphArcs.get(currentNode) == null) {
+          continue;
+        }
+
         for (Arc neighbour : graphArcs.get(currentNode)) {
           if (alreadyChecked.contains(neighbour.getTo())) {
             continue;
           }
-          if (!dijkstra.get(neighbour.getTo()).getValue().isPresent()) {
+          int to = neighbour.getTo();
+          Pair<Optional<Integer>, Optional<Integer>> pair = dijkstra.get(to);
+          pair.getValue();
+          if (!pair.getValue().isPresent()) {
             dijkstra.put(neighbour.getTo(),
                     new Pair(
                             Optional.of(currentNode),

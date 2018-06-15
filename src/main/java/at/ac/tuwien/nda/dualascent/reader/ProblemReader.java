@@ -63,9 +63,12 @@ public class ProblemReader {
         //instance.setNodeNumber(Integer.parseInt(words[1]));
       } else if ("Edges".equals(words[0])) {
         //instance.setEdgeNumber(Integer.parseInt(words[1]));
+        instance.setDirected(false);
       } else if ("E".equals(words[0])) {
         instance.addArc(new Arc(Integer.parseInt(words[1]), Integer.parseInt(words[2]), Integer.parseInt(words[3])));
         instance.addArc(new Arc(Integer.parseInt(words[2]), Integer.parseInt(words[1]), Integer.parseInt(words[3])));
+      } else if ("Arcs".equals(words[0])) {
+        instance.setDirected(true);
       } else if ("A".equals(words[0])) {
         instance.addArc(new Arc(Integer.parseInt(words[1]), Integer.parseInt(words[2]), Integer.parseInt(words[3])));
       } else {

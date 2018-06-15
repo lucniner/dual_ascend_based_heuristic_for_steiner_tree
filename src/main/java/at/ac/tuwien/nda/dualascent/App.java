@@ -26,7 +26,7 @@ public class App {
   public static void main(String[] args) {
     CommandLine cmd = parseArguments(args);
 
-    String fileName = App.class.getClassLoader().getResource("example.stp").getPath();
+    String fileName = App.class.getClassLoader().getResource("slideExample.stp").getPath();
 
     List<File> files = new ArrayList<>();
 
@@ -60,12 +60,12 @@ public class App {
 
 //      SolutionInstance solutionInstance = new DualAscend(instance).solve();
 //      ProblemInstance instance2 = solutionInstance.convertToProblemInstance();
-      SolutionInstance solutionInstance = new ShortestPath(instance).solve();
-      SolutionVerifier solutionVerifier = new SolutionVerifier(instance, solutionInstance);
+      SolutionInstance solutionInstance2 = new ShortestPath(instance).solve();
+      SolutionVerifier solutionVerifier = new SolutionVerifier(instance, solutionInstance2);
 
 
       if (solutionVerifier.verifySolution()) {
-        logger.info("Valid solution for instance '"+file.getName()+"' was created with sum: " + solutionInstance.getDistanceSum()); // sum must also be calculated
+        logger.info("Valid solution for instance '"+file.getName()+"' was created with sum: " + solutionInstance2.getDistanceSum()); // sum must also be calculated
       }
     }
   }
