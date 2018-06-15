@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,8 +49,9 @@ public class App {
     } else {
       files.add(new File(fileName));
     }
+    Instant begin = Instant.now();
 
-    for (File file : files) {
+    files.parallelStream().forEach((file) -> {
       ProblemInstance instance;
       try {
         instance = ProblemReader.loadInstance(file);
@@ -68,9 +70,11 @@ public class App {
 
 
       if (solutionVerifier.verifySolution()) {
-        logger.info("Instance '"+file.getName()+"' has sum of :" + solutionInstance2.getDistanceSum()); // sum must also be calculated
+        logger.info("Instance '" + file.getName() + "' has sum of :" + solutionInstance2.getDistanceSum()); // sum must also be calculated
       }
-    }
+    });
+
+    logger.info("Complete running time [s]: " + (Instant.now().getEpochSecond() - begin.getEpochSecond()));
   }
 
   private static CommandLine parseArguments(String[] args) {
