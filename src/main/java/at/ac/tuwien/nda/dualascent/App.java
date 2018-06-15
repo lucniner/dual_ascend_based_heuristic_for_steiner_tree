@@ -70,7 +70,7 @@ public class App {
 
 
       if (solutionVerifier.verifySolution()) {
-        logger.info("Instance '" + file.getName() + "' has sum of :" + solutionInstance2.getDistanceSum()); // sum must also be calculated
+        logger.info("Instance '" + file.getName() + "', SteinerTree sum: " + solutionInstance2.getDistanceSum()); // sum must also be calculated
       }
     });
 
