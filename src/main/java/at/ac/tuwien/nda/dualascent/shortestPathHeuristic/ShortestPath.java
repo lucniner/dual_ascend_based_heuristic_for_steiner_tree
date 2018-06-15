@@ -46,7 +46,7 @@ public class ShortestPath {
               dijkstra.put(key, new Pair(Optional.empty(), Optional.empty()))
       );
       solutionInstance.getSteinerTree().stream().forEach(key ->
-              dijkstra.put(key, new Pair(Optional.of(rootTerminal), Optional.of(0)))
+              dijkstra.put(key, new Pair(Optional.empty(), Optional.of(0)))
       );
       dijkstra.put(rootTerminal, new Pair<>(Optional.empty(), Optional.of(0)));
 
@@ -92,6 +92,7 @@ public class ShortestPath {
 
         int currentNode = getMinNotCheckedNode().get();
         //logger.info("Current terminal: " + currentNode);
+        //logger.info("Evaluate neighbors: " + graphArcs.get(currentNode));
         if (remainingTerminals.size() == 1) {
           upperBound = dijkstra.get(remainingTerminals.get(0)).getValue();
           currentBestTerminal = Optional.of(remainingTerminals.get(0));
@@ -121,9 +122,11 @@ public class ShortestPath {
             }
           }
 
-          //for (Map.Entry<Integer, Pair<Optional<Integer>, Optional<Integer>>> entry : dijkstra.entrySet()) {
-          //  logger.info("Node: " + entry.getKey() + ", Prev: " + entry.getValue().getKey() + ", Dist: " + entry.getValue().getValue());
-          //}
+//          for (Map.Entry<Integer, Pair<Optional<Integer>, Optional<Integer>>> entry : dijkstra.entrySet()) {
+//            if ( entry.getKey() == 5 || entry.getKey() == 49) {
+//              logger.info("Node: " + entry.getKey() + ", Prev: " + entry.getValue().getKey() + ", Dist: " + entry.getValue().getValue());
+//            }
+//          }
 
           if (remainingTerminals.contains(neighbour.getTo())) {
             if (upperBound.isPresent()) {

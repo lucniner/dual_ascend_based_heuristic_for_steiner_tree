@@ -38,7 +38,7 @@ public class SolutionVerifier {
     }
 
     if (terminalsToVisit.size() > 0) {
-      logger.info("Not all terminals visited");
+      logger.error("Not all terminals visited");
       return false;
     }
 
@@ -55,7 +55,7 @@ public class SolutionVerifier {
 
     for (Arc arc : arcs.get(currentTerminal)) {
       if (alreadyVisitedNodes.contains(arc.getTo())) {
-        throw new SteinerTreeVerifierException("Circle found in solution");
+        throw new SteinerTreeVerifierException("Circle found in solution trying to reach node " + arc.getTo());
       }
       visitNode(arc.getTo());
     }
