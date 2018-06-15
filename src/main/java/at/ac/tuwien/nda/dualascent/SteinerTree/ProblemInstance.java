@@ -2,54 +2,42 @@ package at.ac.tuwien.nda.dualascent.SteinerTree;
 
 import at.ac.tuwien.nda.dualascent.util.Arc;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class ProblemInstance {
-  private int nodeNumber;
-  private int edgeNumber;
-  private int terminalNumber;
   private List<Integer> terminals;
 
-  private HashMap<Integer, List<Arc>> graph;
+  private boolean isDirected;
+
+  private HashMap<Integer, List<Arc>> arcs_by_from_node;
+  private HashMap<Integer, List<Arc>> arcs_by_to_node;
 
   public ProblemInstance() {
-    this.graph = new HashMap<>();
+    this.arcs_by_from_node = new HashMap<>();
+    this.arcs_by_to_node = new HashMap<>();
+
+    this.isDirected = true;
   }
 
-  public void addArc(int node, Arc arc) {
-    if (graph.get(node) == null) {
+  public void addArc(Arc arc) {
+    int from = arc.getFrom();
+    int to = arc.getTo();
+
+    if (arcs_by_from_node.get(from) == null) {
       List arcList = new ArrayList();
       arcList.add(arc);
-      graph.put(node, arcList);
+      arcs_by_from_node.put(from, arcList);
     } else {
-      graph.get(node).add(arc);
+      arcs_by_from_node.get(from).add(arc);
     }
-  }
 
-  public int getNodeNumber() {
-    return nodeNumber;
-  }
-
-  public void setNodeNumber(int nodeNumber) {
-    this.nodeNumber = nodeNumber;
-  }
-
-  public int getEdgeNumber() {
-    return edgeNumber;
-  }
-
-  public void setEdgeNumber(int edgeNumber) {
-    this.edgeNumber = edgeNumber;
-  }
-
-  public int getTerminalNumber() {
-    return terminalNumber;
-  }
-
-  public void setTerminalNumber(int terminalNumber) {
-    this.terminalNumber = terminalNumber;
+    if (arcs_by_to_node.get(to) == null) {
+      List arrayList = new ArrayList();
+      arrayList.add(arc);
+      arcs_by_to_node.put(to, arrayList);
+    } else {
+      arcs_by_to_node.get(to).add(arc);
+    }
   }
 
   public List<Integer> getTerminals() {
@@ -61,6 +49,43 @@ public class ProblemInstance {
   }
 
   public HashMap<Integer, List<Arc>> getGraph() {
-    return graph;
+    return arcs_by_from_node;
+  }
+
+  public HashMap<Integer, List<Arc>> getGraphByToNode() {
+    return arcs_by_to_node;
+  }
+
+  public HashMap<Integer, List<Arc>> cloneGraphByToNode() {
+    HashMap<Integer, List<Arc>> map = new HashMap<>();
+    for (Map.Entry entry : arcs_by_to_node.entrySet()) {
+      List<Arc> newArcs = new ArrayList<>();
+      for (Arc arc : (List<Arc>)entry.getValue()) {
+        newArcs.add(new Arc(arc.getFrom(), arc.getTo(), arc.getWeight()));
+      }
+      map.put((Integer)entry.getKey(), newArcs);
+    }
+    return  map;
+  }
+
+  public Optional<Integer> getWeight(int from, int to) {
+    Optional<Integer> weight = Optional.empty();
+
+    for(Integer node : arcs_by_from_node.keySet()) {
+      for (Arc arc : arcs_by_from_node.get(node)) {
+        if ((arc.getFrom() == from) && (arc.getTo() == to)) {
+          weight = Optional.of(arc.getWeight());
+        }
+      }
+    }
+    return weight;
+  }
+
+  public boolean isDirected() {
+    return isDirected;
+  }
+
+  public void setDirected(boolean directed) {
+    isDirected = directed;
   }
 }

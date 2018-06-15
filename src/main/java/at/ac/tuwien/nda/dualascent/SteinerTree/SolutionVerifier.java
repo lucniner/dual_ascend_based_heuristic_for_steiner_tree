@@ -56,8 +56,9 @@ public class SolutionVerifier {
     for (Arc arc : arcs.get(currentTerminal)) {
       if (alreadyVisitedNodes.contains(arc.getTo())) {
         throw new SteinerTreeVerifierException("Circle found in solution trying to reach node " + arc.getTo());
+      } else {
+        visitNode(arc.getTo());
       }
-      visitNode(arc.getTo());
     }
   }
 }
