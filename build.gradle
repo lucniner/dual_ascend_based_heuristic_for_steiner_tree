@@ -15,17 +15,13 @@ jar {
 repositories {
     mavenCentral()
     jcenter()
-    maven {
-        url = 'https://oss.sonatype.org/content/groups/public/'
-    }
 }
 
 dependencies {
     compile 'com.google.guava:guava:23.0'
     compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
     compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
-    compile group: 'es.usc.citius.hipster', name: 'hipster-all', version: '1.0.1'
-
+    compile group: 'org.graphstream', name: 'gs-core', version: '1.3'
 
     testCompile 'junit:junit:4.12'
 }

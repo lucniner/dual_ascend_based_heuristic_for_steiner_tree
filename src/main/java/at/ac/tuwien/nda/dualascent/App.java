@@ -7,6 +7,7 @@ import at.ac.tuwien.nda.dualascent.dualascend.DualAscend;
 import at.ac.tuwien.nda.dualascent.exceptions.SteinerTreeLoadingException;
 import at.ac.tuwien.nda.dualascent.reader.ProblemReader;
 import at.ac.tuwien.nda.dualascent.shortestPathHeuristic.ShortestPath;
+import at.ac.tuwien.nda.dualascent.visualization.SteinerTreeVisualizer;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,7 @@ public class App {
   public static void main(String[] args) {
     CommandLine cmd = parseArguments(args);
 
-    String fileName = App.class.getClassLoader().getResource("slideExample.stp").getPath();
+    String fileName = App.class.getClassLoader().getResource("example.stp").getPath();
 
     List<File> files = new ArrayList<>();
 
@@ -71,6 +72,12 @@ public class App {
 
       if (solutionVerifier.verifySolution()) {
         logger.info("Instance '" + file.getName() + "', SteinerTree sum: " + solutionInstance2.getDistanceSum()); // sum must also be calculated
+
+        if (cmd.hasOption("visualize")) {
+          SteinerTreeVisualizer visualizer = new SteinerTreeVisualizer(instance, solutionInstance2);
+          visualizer.createGraph();
+        }
+
       }
     });
 
@@ -85,11 +92,13 @@ public class App {
     Option file = new Option("f", "file", true, "load instance from given file");
     Option directory = new Option("d", "directory", true, "load all instances from given directory");
     Option dualAscent = new Option("a", "dualAscent", false, "use dual ascent before shortest path heuristic");
+    Option visualize = new Option("v", "visualize", false, "visualization of the output");
 
     options.addOption(help);
     options.addOption(file);
     options.addOption(directory);
     options.addOption(dualAscent);
+    options.addOption(visualize);
 
     try {
       cmd = new DefaultParser().parse(options, args, false);
