@@ -26,11 +26,9 @@ public class App {
   private static final Logger logger = LoggerFactory.getLogger(App.class);
 
   public static void main(String[] args) {
-    CommandLine cmd = parseArguments(args);
+    final CommandLine cmd = parseArguments(args);
 
-    String fileName = App.class.getClassLoader().getResource("example.stp").getPath();
-
-    List<File> files = new ArrayList<>();
+    final List<File> files = new ArrayList<>();
 
     if (cmd.hasOption("directory")) {
       File directory = new File(cmd.getOptionValue("directory"));
@@ -38,60 +36,73 @@ public class App {
         logger.error("Specified path is not a directory");
         return;
       }
-      File[] fileArray = directory.listFiles();
+      final File[] fileArray = directory.listFiles();
       files.addAll(Arrays.asList(fileArray));
     } else if (cmd.hasOption("file")) {
-      File file = new File(cmd.getOptionValue("file"));
+      final File file = new File(cmd.getOptionValue("file"));
       if (!file.isFile()) {
         logger.error("Specified file does not exist");
         return;
       }
       files.add(file);
     } else {
-      files.add(new File(fileName));
+      logger.error(
+              "no file or directory specified for the run. please use the -f or -d option to do so");
+      return;
     }
+
     Instant begin = Instant.now();
+    files
+            .parallelStream()
+            .forEach(
+                    (file) -> {
+                      ProblemInstance instance;
+                      try {
+                        instance = ProblemReader.loadInstance(file);
+                      } catch (IOException | SteinerTreeLoadingException e) {
+                        logger.error(e.getLocalizedMessage());
+                        return;
+                      }
 
-    files.parallelStream().forEach((file) -> {
-      ProblemInstance instance;
-      try {
-        instance = ProblemReader.loadInstance(file);
-      } catch (IOException | SteinerTreeLoadingException e) {
-        logger.error(e.getLocalizedMessage());
-        return;
-      }
+                      if (cmd.hasOption("dualAscent")) {
+                        SolutionInstance solutionInstanceDualAscent = new DualAscend(instance).solve();
+                        instance = solutionInstanceDualAscent.convertToProblemInstance();
+                      }
 
-      if (cmd.hasOption("dualAscent")) {
-        SolutionInstance solutionInstanceDualAscent = new DualAscend(instance).solve();
-        instance = solutionInstanceDualAscent.convertToProblemInstance();
-      }
+                      final SolutionInstance shortestPathSolution = new ShortestPath(instance).solve();
+                      final SolutionVerifier solutionVerifier =
+                              new SolutionVerifier(instance, shortestPathSolution);
 
-      SolutionInstance solutionInstance2 = new ShortestPath(instance).solve();
-      SolutionVerifier solutionVerifier = new SolutionVerifier(instance, solutionInstance2);
+                      if (solutionVerifier.verifySolution()) {
 
+                        logger.info(
+                                "Instance '"
+                                        + file.getName()
+                                        + "', SteinerTree sum: "
+                                        + shortestPathSolution.getDistanceSum()); // sum must also be calculated
 
-      if (solutionVerifier.verifySolution()) {
-        logger.info("Instance '" + file.getName() + "', SteinerTree sum: " + solutionInstance2.getDistanceSum()); // sum must also be calculated
+                        if (cmd.hasOption("visualize")) {
+                          final SteinerTreeVisualizer visualizer =
+                                  new SteinerTreeVisualizer(instance, shortestPathSolution);
+                          visualizer.createGraph();
+                        }
+                      }
+                    });
 
-        if (cmd.hasOption("visualize")) {
-          SteinerTreeVisualizer visualizer = new SteinerTreeVisualizer(instance, solutionInstance2);
-          visualizer.createGraph();
-        }
-
-      }
-    });
-
-    logger.info("Complete running time [s]: " + (Instant.now().getEpochSecond() - begin.getEpochSecond()));
+    logger.info(
+            "Complete running time [s]: " + (Instant.now().getEpochSecond() - begin.getEpochSecond()));
   }
 
   private static CommandLine parseArguments(String[] args) {
     CommandLine cmd = null;
 
     Options options = new Options();
-    Option help = new Option( "h", "help", false, "print this message" );
+    Option help = new Option("h", "help", false, "print this message");
     Option file = new Option("f", "file", true, "load instance from given file");
-    Option directory = new Option("d", "directory", true, "load all instances from given directory");
-    Option dualAscent = new Option("a", "dualAscent", false, "use dual ascent before shortest path heuristic");
+    Option directory =
+            new Option("d", "directory", true, "load all instances from given directory");
+    Option dualAscent =
+            new Option("a", "dualAscent", false, "use dual ascent before shortest path heuristic");
     Option visualize = new Option("v", "visualize", false, "visualization of the output");
 
     options.addOption(help);
