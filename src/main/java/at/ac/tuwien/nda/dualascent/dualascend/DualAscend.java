@@ -2,120 +2,120 @@ package at.ac.tuwien.nda.dualascent.dualascend;
 
 import at.ac.tuwien.nda.dualascent.SteinerTree.ProblemInstance;
 import at.ac.tuwien.nda.dualascent.SteinerTree.SolutionInstance;
-import at.ac.tuwien.nda.dualascent.util.Edge;
-import es.usc.citius.hipster.algorithm.Algorithm;
-import es.usc.citius.hipster.algorithm.Hipster;
-import es.usc.citius.hipster.graph.GraphBuilder;
-import es.usc.citius.hipster.graph.GraphSearchProblem;
-import es.usc.citius.hipster.graph.HipsterGraph;
-import es.usc.citius.hipster.model.problem.SearchProblem;
+import at.ac.tuwien.nda.dualascent.util.Arc;
+import at.ac.tuwien.nda.dualascent.util.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class DualAscend {
-    private final Random random = new Random();
-    private final List<Edge> graphEdges;
-    private final ProblemInstance problemInstance;
-    private HipsterGraph<Integer, Integer> graph;
-    private int lowerBound = 0;
+  private final Logger logger = LoggerFactory.getLogger(DualAscend.class);
 
-    public DualAscend(final ProblemInstance problemInstance) {
-        this.problemInstance = problemInstance;
-        this.graphEdges = this.problemInstance.getEdges();
+  private final HashMap<Integer, List<Arc>> graphArcsByToNode;
+  private final ProblemInstance problemInstance;
+  private List<Arc> currentGraph;
+  private int lowerBound = 0;
+
+  public DualAscend(final ProblemInstance problemInstance) {
+    this.problemInstance = problemInstance;
+    this.graphArcsByToNode = this.problemInstance.cloneGraphByToNode();
+    currentGraph = new ArrayList<>();
+  }
+
+  public SolutionInstance solve() {
+    final int rootTerminal =  problemInstance.getTerminals().get(0);
+    final List<Integer> remainingTerminals = problemInstance.getTerminals();
+    remainingTerminals.remove(0);
+    SolutionInstance solutionInstance = new SolutionInstance(rootTerminal, problemInstance.getTerminals());
+
+    PriorityQueue<Pair<Integer, HashSet<Integer>>> priorityQueue = new PriorityQueue(remainingTerminals.size(), new Comparator<Pair<Integer, HashSet<Integer>>>() {
+      @Override
+      public int compare(Pair<Integer, HashSet<Integer>> o1, Pair<Integer, HashSet<Integer>> o2) {
+        return o1.getValue().size() - o2.getValue().size();
+      }
+    });
+
+    for (Integer node : remainingTerminals) {
+      HashSet<Integer> set = new HashSet();
+      set.add(node);
+      priorityQueue.add(new Pair(node, set));
     }
 
-    public SolutionInstance solve() {
+    while (!remainingTerminals.isEmpty()) {
+      //final int activeTerminal = remainingTerminals.get(0);
+      //HashSet<Integer> nodesContained = reverseBFS(activeTerminal);
+      //if (nodesContained.contains(rootTerminal)) {
+      //  remainingTerminals.remove(0);
+      //  continue;
+      //}
 
-
-        final List<Edge> currentGraph = new ArrayList<>();
-        final int rootIndex = getRandom(0, problemInstance.getTerminalNumber() - 1);
-        final int rootTerminal = problemInstance.getTerminals().get(rootIndex);
-        System.out.println("root terminal: " + rootTerminal);
-
-        final List<Integer> terminals = problemInstance.getTerminals();
-        terminals.remove(rootIndex);
-
-        while (!terminals.isEmpty()) {
-            final int activeIndex = getRandom(0, terminals.size() - 1);
-            final int activeTerminal = terminals.get(activeIndex);
-
-            this.constructGraph(currentGraph);
-
-            SearchProblem problem =
-                    GraphSearchProblem.startingFrom(activeTerminal).in(graph).takeCostsFromEdges().build();
-            final Algorithm.SearchResult result = Hipster.createDijkstra(problem).search(rootTerminal);
-
-            if (!result.getOptimalPaths().isEmpty()) {
-                if (result.getOptimalPaths().size() == 1) {
-                    List<Integer> l = (List<Integer>) result.getOptimalPaths().get(0);
-                    if (l.contains(rootTerminal)) {
-                        terminals.remove(activeIndex);
-                        continue;
-                    }
-                }
-
-            }
-
-
-            final OptionalInt delta =
-                    getConnectedEdgesToNode(activeTerminal).stream().mapToInt(Edge::getWeight).min();
-
-            for (final Edge edge : getConnectedEdgesToNode(activeTerminal)) {
-                if (delta.isPresent() && edge.getWeight() > 0) {
-                    final int newWeight = edge.getWeight() - delta.getAsInt();
-                    if (newWeight < 0) {
-                        throw new RuntimeException("this should not happen - fix it");
-                    }
-
-                    final int edgeIndex = getIndex(edge);
-                    this.graphEdges.get(edgeIndex).setWeight(newWeight);
-                    if (newWeight == 0) {
-                        currentGraph.add(edge);
-                    }
-                }
-            }
-
-            if (delta.isPresent()) {
-                lowerBound += delta.getAsInt();
-            }
+      boolean appropriateTerminalFound = false;
+      Pair<Integer, HashSet<Integer>> activeTerminal = priorityQueue.poll();
+      while (!appropriateTerminalFound) {
+        activeTerminal = new Pair(activeTerminal.getKey(), reverseBFS(activeTerminal.getKey()));
+        if (priorityQueue.size() == 0) {
+          appropriateTerminalFound = true;
+        } else if (activeTerminal.getValue().size() > priorityQueue.peek().getValue().size()) {
+          priorityQueue.add(activeTerminal);
+          activeTerminal = priorityQueue.poll();
+        } else {
+          appropriateTerminalFound = true;
         }
+      }
 
-        System.out.println(lowerBound);
-        return null;
-    }
+      if (activeTerminal.getValue().contains(rootTerminal)) {
+        remainingTerminals.remove((Integer)activeTerminal.getKey());
+        continue;
+      }
+      priorityQueue.add(activeTerminal);
 
-    private void constructGraph(final List<Edge> edges) {
-        final GraphBuilder<Integer, Integer> builder = GraphBuilder.create();
-        for (final Edge edge : edges) {
-            builder.connect(edge.getTo()).to(edge.getFrom()).withEdge(edge.getWeight());
-        }
-        graph = builder.createUndirectedGraph();
-    }
-
-    private void printSolutionGraphs(final List<List<Integer>> paths) {
-        paths.forEach(path -> System.out.println(Arrays.toString(path.toArray())));
-    }
-
-    private int getRandom(final int min, final int max) {
-        return random.nextInt(max - min + 1) + min;
-    }
-
-    private Set<Edge> getConnectedEdgesToNode(final int node) {
-        return this.graphEdges
-                .stream()
-                .filter(e -> e.getWeight() > 0 && (e.getFrom() == node || e.getTo() == node))
-                .collect(Collectors.toSet());
-    }
-
-    private int getIndex(final Edge edge) {
-        int count = 0;
-        for (final Edge e : this.graphEdges) {
-            if (e.equals(edge)) {
-                return count;
+      Optional<Integer> delta = Optional.empty();
+      for (Integer node : activeTerminal.getValue()) {
+        for (Arc arc : graphArcsByToNode.get(node)) {
+          if (!activeTerminal.getValue().contains(arc.getFrom())) {
+            if (!delta.isPresent()) {
+              delta = Optional.of(arc.getWeight());
+            } else if (arc.getWeight() < delta.get()) {
+              delta = Optional.of(arc.getWeight());
             }
-            count++;
+          }
         }
-        return count;
+      }
+
+      for (Integer node : activeTerminal.getValue()) {
+        for (Arc arc : graphArcsByToNode.get(node)) {
+          if (!activeTerminal.getValue().contains(arc.getFrom())) {
+            arc.setWeight(Math.max(arc.getWeight() - delta.get(), 0));
+            if (arc.getWeight() == 0) {
+              currentGraph.add(arc);
+              solutionInstance.addArc(arc.getFrom(), arc.getTo(), problemInstance.getWeight(arc.getFrom(), arc.getTo()).get());
+            }
+          }
+        }
+      }
+
+     if (delta.isPresent()) {
+       lowerBound += delta.get();
+     }
     }
+
+    return solutionInstance;
+  }
+
+  private HashSet<Integer> reverseBFS(int activeTerminal) {
+    HashSet<Integer> nodesContained = new HashSet<>();
+    return visitTopNode(activeTerminal, nodesContained);
+  }
+
+  private HashSet<Integer> visitTopNode(int currentNode, HashSet<Integer> nodesContained) {
+    nodesContained.add(currentNode);
+
+      for (Arc arc : currentGraph) {
+        if ((!nodesContained.contains(arc.getFrom()) && (arc.getTo() == currentNode))) {
+          visitTopNode(arc.getFrom(), nodesContained);
+        }
+    }
+    return nodesContained;
+  }
 }

@@ -4,8 +4,8 @@ import java.util.Objects;
 
 public class Pair<T, E> {
 
-  private final T key;
-  private final E value;
+  private T key;
+  private E value;
 
   public Pair(final T key, final E value) {
     this.key = key;
@@ -18,6 +18,14 @@ public class Pair<T, E> {
 
   public E getValue() {
     return value;
+  }
+
+  public void setKey(T key) {
+    this.key = key;
+  }
+
+  public void setValue(E value) {
+    this.value = value;
   }
 
   @Override

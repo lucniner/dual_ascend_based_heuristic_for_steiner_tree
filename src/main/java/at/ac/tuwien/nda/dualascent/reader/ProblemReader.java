@@ -2,28 +2,24 @@ package at.ac.tuwien.nda.dualascent.reader;
 
 import at.ac.tuwien.nda.dualascent.SteinerTree.ProblemInstance;
 import at.ac.tuwien.nda.dualascent.exceptions.SteinerTreeLoadingException;
-import at.ac.tuwien.nda.dualascent.util.Edge;
+import at.ac.tuwien.nda.dualascent.util.Arc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProblemReader {
   private static final Logger logger = LoggerFactory.getLogger(ProblemReader.class);
 
-  public static ProblemInstance loadInstance(String fileName) throws IOException, SteinerTreeLoadingException {
-    logger.info("load instance from file: " + fileName);
+  public static ProblemInstance loadInstance(File file) throws IOException, SteinerTreeLoadingException {
     ProblemInstance instance = new ProblemInstance();
 
     try (BufferedReader reader =
                new BufferedReader(
                        new InputStreamReader(
-                               new FileInputStream(fileName)))) {
+                               new FileInputStream(file)))) {
 
 
       String currentLine = reader.readLine();
@@ -60,22 +56,26 @@ public class ProblemReader {
   }
 
   private static void parseGraph(BufferedReader bf, ProblemInstance instance) throws IOException, SteinerTreeLoadingException {
-    List<Edge> edges = new ArrayList<>();
     String line = bf.readLine();
     while(!(line.startsWith("END") || line.startsWith("End"))) {
       String[] words = line.split(" ");
       if ("Nodes".equals(words[0])) {
-        instance.setNodeNumber(Integer.parseInt(words[1]));
+        //instance.setNodeNumber(Integer.parseInt(words[1]));
       } else if ("Edges".equals(words[0])) {
-        instance.setEdgeNumber(Integer.parseInt(words[1]));
+        //instance.setEdgeNumber(Integer.parseInt(words[1]));
+        instance.setDirected(false);
       } else if ("E".equals(words[0])) {
-        edges.add(new Edge(Integer.parseInt(words[1]), Integer.parseInt(words[2]), Integer.parseInt(words[3])));
+        instance.addArc(new Arc(Integer.parseInt(words[1]), Integer.parseInt(words[2]), Integer.parseInt(words[3])));
+        instance.addArc(new Arc(Integer.parseInt(words[2]), Integer.parseInt(words[1]), Integer.parseInt(words[3])));
+      } else if ("Arcs".equals(words[0])) {
+        instance.setDirected(true);
+      } else if ("A".equals(words[0])) {
+        instance.addArc(new Arc(Integer.parseInt(words[1]), Integer.parseInt(words[2]), Integer.parseInt(words[3])));
       } else {
         throw new SteinerTreeLoadingException("Unexpected token reading graph section: " + words[0]);
       }
       line = bf.readLine();
     }
-    instance.setEdges(edges);
   }
 
   private static void parseTerminals(BufferedReader bf, ProblemInstance instance) throws IOException, SteinerTreeLoadingException {
@@ -84,7 +84,7 @@ public class ProblemReader {
     while(!(line.startsWith("END") || line.startsWith("End"))) {
       String[] words = line.split(" ");
       if ("Terminals".equals(words[0])) {
-        instance.setTerminalNumber(Integer.parseInt(words[1]));
+        //instance.setTerminalNumber(Integer.parseInt(words[1]));
       } else if ("T".equals(words[0])) {
         terminals.add(Integer.parseInt(words[1]));
       }
